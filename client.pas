@@ -5,14 +5,12 @@ interface // описывает все переменные и функции к
 
 uses System, System.IO, System.Net, System.Net.Sockets;
 
-const
-  size = 10;
-
 var
   board: array[0..size-1, 0..size-1] of integer;
   yourturn: boolean;
   curtype: string;
-
+  size: integer;
+  wincount: integer;
 procedure Connect();
 procedure GetState();
 procedure SendMove(row, col: integer);
@@ -40,6 +38,8 @@ procedure GetState();
 begin
   curtype := reader.ReadLine();//state,move,game_over,error
   yourturn := reader.ReadLine() = 'True';
+  size = reader.ReadLine();
+  wincount = reader.ReadLine();
   for var i := 0 to size-1 do
     for var j := 0 to size-1 do
       board[i,j] := StrToInt(reader.ReadLine());
@@ -72,17 +72,20 @@ begin
         begin
           if yourturn then writeln('я победил')
           else writeln('я проиграл');
+          for var i:=0 to 9 do writeln(board[i]);
           break;
         end
         else if curtype = 'draw' then
         begin
           writeln('ничья');
+          for var i:=0 to 9 do writeln(board[i]);
           break;
         end
         else if curtype = 'error' then
         begin
           if yourturn then writeln('я ошибся, прости')
           else writeln('он ошибся, ахахахаха');
+          for var i:=0 to 9 do writeln(board[i]);
           break;
         end;
       if yourturn then

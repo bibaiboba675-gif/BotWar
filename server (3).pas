@@ -2,11 +2,9 @@
 uses System, System.IO, System.Net, System.Net.Sockets, System.Diagnostics;
 
 const
-  N = 10;
-  WinCount = 5;
+
   VPort = 5001; // НЕДОДЕЛАНО, порт зрителя
   TurnTimeoutMs = 2000;
-
 type
   Tplayer = class
     Client: TcpClient;
@@ -15,7 +13,9 @@ type
   end;
 
 var
-  board: array[0..N-1, 0..N-1] of integer;
+  N : integer = 10;
+  wincount : integer = 5;
+  board: array of array of integer;
   FigTurn: integer;
   Players: array[1..2] of Tplayer;
   listener: TCPlistener;
@@ -46,6 +46,8 @@ begin
   writer.writeline(curtype);
   if figturn = id then writer.writeline(True)
   else writer.writeline(False);
+  writer.WriteLine(N);
+  writer.WriteLine(Wincount);
   for var i:=0 to N-1 do
     for var j := 0 to N-1 do
       writer.writeline(board[i,j]);
@@ -153,9 +155,13 @@ end;
 procedure InitGame();
 begin
   FigTurn := 1;
+  Setlength(board,N);
   for var i := 0 to N - 1 do
-    for var j := 0 to N - 1 do
-      board[i, j] := 0;
+    begin
+      SetLength(board[i],N);
+      for var j := 0 to N - 1 do
+        board[i, j] := 0;
+    end;
 end;
 
 procedure DrawField();
@@ -179,7 +185,7 @@ begin
 
     SendState(1, 'state'); // отправляем поле первому боту
     SendState(2, 'state'); // и второму
-
+    
     GetBotMove(FigTurn, row, col); // ждем ход текущего бота
 
     if not ApplyMove(row,col) then 
