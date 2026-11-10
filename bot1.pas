@@ -3,12 +3,12 @@
 const
 fig = 1;
 fig1 = 2;
-var ncells : integer = size;
+
 function CountLine(r, c, dr, dc, fig: integer): integer; //подсчет фигур в ряд начиная с клетки r c  сторону заданную dr dc 
 begin
   r += dr;
   c += dc;
-  while (r >= 0) and (r < ncells) and (c >= 0) and (c < ncells) and (board[r, c] = fig) do
+  while (r >= 0) and (r < size) and (c >= 0) and (c < size) and (board[r, c] = fig) do
     begin
       Result += 1;
       r += dr;
@@ -30,8 +30,8 @@ begin
   var bestR := -1; //лучший ход
   var bestC := -1;
   var bestScore := -1;
-  for var i := 0 to ncells - 1 do
-    for var j := 0 to ncells - 1 do
+  for var i := 0 to size - 1 do
+    for var j := 0 to size - 1 do
       if board1[i, j] = 0 then
         begin
           board1[i, j] := fig; // условно ставим на каждую клетку крестик(бот) и смотрим насколько хорошо
@@ -47,8 +47,8 @@ begin
             end;
         end;
   //делаем тоже самое для ноликов, только теперь смотрим насколько большую можем перекрыть
-  for var i := 0 to ncells - 1 do
-    for var j := 0 to ncells - 1 do
+  for var i := 0 to size - 1 do
+    for var j := 0 to size - 1 do
       if board1[i, j] = 0 then
         begin
           board1[i, j] := fig1;

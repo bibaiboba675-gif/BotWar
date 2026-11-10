@@ -40,6 +40,7 @@ begin
   yourturn := reader.ReadLine() = 'True';
   size := StrToInt(reader.ReadLine());
   wincount := StrtoInt(reader.ReadLine());
+  board := new integer[size,size];
   for var i := 0 to size-1 do
     for var j := 0 to size-1 do
       board[i,j] := StrToInt(reader.ReadLine());
@@ -64,8 +65,6 @@ end;
 procedure Play(fchoose: procedure(var row, col: integer));
 begin
   Connect();
-  GetState();
-  board := new integer[size,size];
   try
     while true do
     begin
@@ -75,20 +74,20 @@ begin
         begin
           if yourturn then writeln('я победил')
           else writeln('я проиграл');
-          //for var i:=0 to 9 do writeln(board[i]);
+          writeln(board);
           break;
         end
         else if curtype = 'draw' then
         begin
           writeln('ничья');
-          //for var i:=0 to 9 do writeln(board[i]);
+          writeln(board);
           break;
         end
         else if curtype = 'error' then
         begin
           if yourturn then writeln('я ошибся, прости')
           else writeln('он ошибся, ахахахаха');
-          //for var i:=0 to 9 do writeln(board[i]);
+          writeln(board);
           break;
         end;
       if yourturn then

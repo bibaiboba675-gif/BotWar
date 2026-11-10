@@ -181,7 +181,8 @@ begin
     SendState(2, 'state'); // и второму
     
     GetBotMove(FigTurn, row, col); // ждем ход текущего бота
-
+    writeln(figturn, row, col);
+    writeln(board);
     if not ApplyMove(row,col) then 
     begin
       SendState(1, 'error');
