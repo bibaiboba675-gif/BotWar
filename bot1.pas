@@ -1,8 +1,9 @@
 ﻿uses client;
 
-const ncells = 10;
+const
 fig = 1;
 fig1 = 2;
+var ncells : integer = size;
 function CountLine(r, c, dr, dc, fig: integer): integer; //подсчет фигур в ряд начиная с клетки r c  сторону заданную dr dc 
 begin
   r += dr;

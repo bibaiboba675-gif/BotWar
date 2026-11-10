@@ -15,7 +15,7 @@ type
 var
   N : integer = 10;
   wincount : integer = 5;
-  board: array of array of integer;
+  board: array[,] of integer;
   FigTurn: integer;
   Players: array[1..2] of Tplayer;
   listener: TCPlistener;
@@ -155,13 +155,7 @@ end;
 procedure InitGame();
 begin
   FigTurn := 1;
-  Setlength(board,N);
-  for var i := 0 to N - 1 do
-    begin
-      SetLength(board[i],N);
-      for var j := 0 to N - 1 do
-        board[i, j] := 0;
-    end;
+  board := new integer[N,N];
 end;
 
 procedure DrawField();
