@@ -67,7 +67,7 @@ begin
 end;
 
 begin
-  Init('127.0.0.1',6767);
+  Init('127.0.0.1',6767,'sis');
   Play(ChooseMove);
   
 end.

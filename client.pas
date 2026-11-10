@@ -11,12 +11,13 @@ var
   curtype: string;
   size: integer;
   wincount: integer;
+  botname: string;
 procedure Connect();
 procedure GetState();
 procedure SendMove(row, col: integer);
 procedure Disconnect();
 procedure Play(fchoose : procedure(var row,col : integer));
-procedure Init(ip: string; port: integer);
+procedure Init(ip: string; port: integer; name: string);
 implementation // здесь само описание функций 
 
 var
@@ -32,6 +33,8 @@ begin
   var net := connection.GetStream();
   reader := new StreamReader(net);
   writer := new StreamWriter(net);
+  writer.WriteLine(BotName);
+  writer.Flush();
 end;
 
 procedure GetState();
@@ -57,10 +60,11 @@ procedure Disconnect();
 begin
   connection.close;
 end;
-procedure Init(ip: string; port: integer);
+procedure Init(ip: string; port: integer; name: string);
 begin
-  ServerIP:=ip;
-  ServerPort:=port;
+  ServerIP := ip;
+  ServerPort := port;
+  BotName := name;
 end;
 procedure Play(fchoose: procedure(var row, col: integer));
 begin

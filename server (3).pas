@@ -2,7 +2,7 @@
 uses System, System.IO, System.Net, System.Net.Sockets, System.Diagnostics;
 
 const
-  GameCount = 20;
+  GameCount = 20000;
   VPort = 5001; // НЕДОДЕЛАНО, порт зрителя
   TurnTimeoutMs = 2000;
 type
@@ -10,8 +10,8 @@ type
     Client: TcpClient;
     Reader: StreamReader;
     Writer: StreamWriter;
+    Name: string;
   end;
-
 var
   N : integer = 10;
   wincount : integer = 5;
@@ -19,7 +19,7 @@ var
   FigTurn: integer;
   Players: array[1..2] of Tplayer;
   listener: TCPlistener;
-  
+  Wins1, Wins2, Draws: integer;
 
 procedure StartServer();
 begin
@@ -37,7 +37,8 @@ begin
     players[i].reader := new streamreader(net);
     players[i].writer := new streamwriter(net);
     
-    Writeln('Бот ', i, ' подключён!');
+    Players[i].name := Players[i].reader.ReadLine();
+    Writeln(Players[i].name, ' подключён!');
   end;
 end;
 procedure SendState(id: integer;curtype: string);
@@ -213,7 +214,7 @@ end;
 
 begin
   StartServer();
-
+  readln();
   for var game := 1 to GameCount do
   begin
     InitGame();
@@ -222,9 +223,15 @@ begin
       FigTurn := 2;
   
     var winner := GameLoop();
-  
-    Writeln('Партия ', game, ': результат ', winner);
+    if winner = 1 then
+      Wins1 += 1
+    else if winner = 2 then
+      Wins2 += 1
+    else if winner = 0 then
+      Draws += 1;
   end;
   SendState(1, 'tournament_over');
   SendState(2, 'tournament_over');
+  Writeln('Счёт| ', Wins1, ' : ', Wins2);
+  Writeln('Ничьих| ', Draws);
 end.
