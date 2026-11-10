@@ -36,7 +36,7 @@ end;
 
 procedure GetState();
 begin
-  curtype := reader.ReadLine();//state,move,game_over,error
+  curtype := reader.ReadLine();//state,move,game_over,error,tournament_over
   yourturn := reader.ReadLine() = 'True';
   size := StrToInt(reader.ReadLine());
   wincount := StrtoInt(reader.ReadLine());
@@ -69,26 +69,26 @@ begin
     while true do
     begin
       GetState();
-      
+      if curtype = 'tournament_over' then
+        break;
       if curtype = 'game_over' then
         begin
           if yourturn then writeln('я победил')
           else writeln('я проиграл');
-          writeln(board);
-          break;
+          continue;
         end
         else if curtype = 'draw' then
         begin
           writeln('ничья');
           writeln(board);
-          break;
+          continue;
         end
         else if curtype = 'error' then
         begin
           if yourturn then writeln('я ошибся, прости')
           else writeln('он ошибся, ахахахаха');
           writeln(board);
-          break;
+          exit;
         end;
       if yourturn then
       begin

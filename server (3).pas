@@ -2,7 +2,7 @@
 uses System, System.IO, System.Net, System.Net.Sockets, System.Diagnostics;
 
 const
-
+  GameCount = 20;
   VPort = 5001; // НЕДОДЕЛАНО, порт зрителя
   TurnTimeoutMs = 2000;
 type
@@ -171,7 +171,7 @@ end;
 
 
 
-procedure GameLoop();
+function GameLoop(): integer;
 begin
   while true do
   begin
@@ -181,12 +181,12 @@ begin
     SendState(2, 'state'); // и второму
     
     GetBotMove(FigTurn, row, col); // ждем ход текущего бота
-    writeln(figturn, row, col);
-    writeln(board);
+
     if not ApplyMove(row,col) then 
     begin
       SendState(1, 'error');
       SendState(2, 'error');
+      result := -1;
       exit;
     end;
 
@@ -195,6 +195,7 @@ begin
     begin
       SendState(1, 'game_over');
       SendState(2, 'game_over');
+      result := FigTurn;
       exit;
     end;
 
@@ -202,6 +203,7 @@ begin
     begin
       SendState(1, 'draw');
       SendState(2, 'draw');
+      result := 0;
       exit;
     end;
 
@@ -210,7 +212,19 @@ begin
 end;
 
 begin
-  InitGame;
-  StartServer;
-  GameLoop;
+  StartServer();
+
+  for var game := 1 to GameCount do
+  begin
+    InitGame();
+  
+    if game mod 2 = 0 then
+      FigTurn := 2;
+  
+    var winner := GameLoop();
+  
+    Writeln('Партия ', game, ': результат ', winner);
+  end;
+  SendState(1, 'tournament_over');
+  SendState(2, 'tournament_over');
 end.
