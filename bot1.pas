@@ -1,8 +1,7 @@
 ﻿uses client;
 
-const
-fig = 1;
-fig1 = 2;
+var fig := myfig;
+var fig1 := 3 - myfig;
 
 function CountLine(r, c, dr, dc, fig: integer): integer; //подсчет фигур в ряд начиная с клетки r c  сторону заданную dr dc 
 begin
@@ -67,7 +66,7 @@ begin
 end;
 
 begin
-  Init('127.0.0.1',6767,'sis');
+  Init('127.0.0.1',6767,'bot 1 super algoritm');
   Play(ChooseMove);
   
 end.

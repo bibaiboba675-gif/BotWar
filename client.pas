@@ -12,6 +12,7 @@ var
   size: integer;
   wincount: integer;
   botname: string;
+  myfig: integer;
 procedure Connect();
 procedure GetState();
 procedure SendMove(row, col: integer);
@@ -43,6 +44,7 @@ begin
   yourturn := reader.ReadLine() = 'True';
   size := StrToInt(reader.ReadLine());
   wincount := StrtoInt(reader.ReadLine());
+  myfig := StrToInt(reader.ReadLine());
   board := new integer[size,size];
   for var i := 0 to size-1 do
     for var j := 0 to size-1 do

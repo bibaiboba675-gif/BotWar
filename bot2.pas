@@ -11,6 +11,6 @@ end;
 
 begin
   Randomize();
-  Init('127.0.0.1', 6767,'skebob');
+  Init('127.0.0.1', 6767,'bot 2 random');
   Play(ChooseMove);
 end.

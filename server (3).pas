@@ -1,10 +1,12 @@
 ﻿// BotWar v2 - сервер
+//==================================USES==================================
 uses System, System.IO, System.Net, System.Net.Sockets, System.Diagnostics;
-
+//==================================CONSTS================================
 const
-  GameCount = 20000;
+  GameCount = 3;
   VPort = 5001; // НЕДОДЕЛАНО, порт зрителя
   TurnTimeoutMs = 2000;
+//==================================TYPES=================================
 type
   Tplayer = class
     Client: TcpClient;
@@ -12,43 +14,59 @@ type
     Writer: StreamWriter;
     Name: string;
   end;
+//==================================VARS==================================
 var
   N : integer = 10;
   wincount : integer = 5;
   board: array[,] of integer;
-  FigTurn: integer;
-  Players: array[1..2] of Tplayer;
+  FigTurn, BotCount: integer;
+  Players: array of Tplayer;
   listener: TCPlistener;
   Wins1, Wins2, Draws: integer;
-
+  TournamentStarted: boolean;
+  ActivePlayers: array[1..2] of integer;
+//===============================FUNCTIONS================================
 procedure StartServer();
 begin
   listener := new TcpListener(IPAddress.Loopback, 6767);
   listener.Start;
-
-  for var i := 1 to 2 do
+  Writeln('ждем игркоов...');
+  while not tournamentStarted do
   begin
-    Writeln('Ждём бота ', i);
-    
-    players[i] := new Tplayer;
-    players[i].client := listener.AcceptTcpClient();
-    
-    var net := players[i].Client.GetStream;
-    players[i].reader := new streamreader(net);
-    players[i].writer := new streamwriter(net);
-    
-    Players[i].name := Players[i].reader.ReadLine();
-    Writeln(Players[i].name, ' подключён!');
+    if listener.Pending() then
+    begin
+      BotCount+=1;
+      SetLength(Players, BotCount+1);
+      players[BotCount] := new Tplayer;
+      players[BotCount].client := listener.AcceptTcpClient();
+      
+      var net := players[BotCount].Client.GetStream;
+      players[BotCount].reader := new streamreader(net);
+      players[BotCount].writer := new streamwriter(net);
+      
+      Players[BotCount].name := Players[BotCount].reader.ReadLine();
+      Writeln(Players[BotCount].name, ' подключён!');
+    end;
+    if Console.KeyAvailable then // обработчик ошибок по сути
+    begin
+      var key := Console.ReadKey(true); //читаем клавишу в консоли, при том true- обозначает что клавишу не надо отображать
+
+      if (key.Key = ConsoleKey.Enter) and (BotCount >= 2) then
+        TournamentStarted := true;
+    end;
+    sleep(50);
   end;
 end;
 procedure SendState(id: integer;curtype: string);
 begin
   var writer := players[id].Writer;
   writer.writeline(curtype);
-  if figturn = id then writer.writeline(True)
+  if ActivePlayers[FigTurn] = id then writer.writeline(True)
   else writer.writeline(False);
   writer.WriteLine(N);
   writer.WriteLine(Wincount);
+  if id = ActivePlayers[1] then writer.WriteLine(1)
+  else if id = ActivePlayers[2] then writer.WriteLine(2);
   for var i:=0 to N-1 do
     for var j := 0 to N-1 do
       writer.writeline(board[i,j]);
@@ -157,6 +175,8 @@ procedure InitGame();
 begin
   FigTurn := 1;
   board := new integer[N,N];
+  TournamentStarted := false;
+  BotCount := 0;
 end;
 
 procedure DrawField();
@@ -178,15 +198,15 @@ begin
   begin
     var row, col: integer;
 
-    SendState(1, 'state'); // отправляем поле первому боту
-    SendState(2, 'state'); // и второму
+    SendState(ActivePlayers[1], 'state'); // отправляем поле первому боту
+    SendState(ActivePlayers[2], 'state'); // и второму
     
-    GetBotMove(FigTurn, row, col); // ждем ход текущего бота
+    GetBotMove(ActivePlayers[FigTurn], row, col); // ждем ход текущего бота
 
     if not ApplyMove(row,col) then 
     begin
-      SendState(1, 'error');
-      SendState(2, 'error');
+      SendState(ActivePlayers[1], 'error');
+      SendState(ActivePlayers[2], 'error');
       result := -1;
       exit;
     end;
@@ -194,16 +214,16 @@ begin
 
     if CheckWin(col,row,FigTurn,WinCount) then
     begin
-      SendState(1, 'game_over');
-      SendState(2, 'game_over');
+      SendState(ActivePlayers[1], 'game_over');
+      SendState(ActivePlayers[2], 'game_over');
       result := FigTurn;
       exit;
     end;
 
     if CheckDraw() then
     begin
-      SendState(1, 'draw');
-      SendState(2, 'draw');
+      SendState(ActivePlayers[1], 'draw');
+      SendState(ActivePlayers[2], 'draw');
       result := 0;
       exit;
     end;
@@ -211,10 +231,12 @@ begin
     SwitchTurn(); 
   end;
 end;
-
+//==================================MAIN==================================
 begin
   StartServer();
   readln();
+  ActivePlayers[1] := 2;
+  ActivePlayers[2] := 3;
   for var game := 1 to GameCount do
   begin
     InitGame();
