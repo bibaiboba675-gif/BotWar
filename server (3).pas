@@ -66,7 +66,8 @@ begin
   writer.WriteLine(N);
   writer.WriteLine(Wincount);
   if id = ActivePlayers[1] then writer.WriteLine(1)
-  else if id = ActivePlayers[2] then writer.WriteLine(2);
+  else if id = ActivePlayers[2] then writer.WriteLine(2)
+  else writer.WriteLine(0);
   for var i:=0 to N-1 do
     for var j := 0 to N-1 do
       writer.writeline(board[i,j]);
@@ -175,8 +176,6 @@ procedure InitGame();
 begin
   FigTurn := 1;
   board := new integer[N,N];
-  TournamentStarted := false;
-  BotCount := 0;
 end;
 
 procedure DrawField();
@@ -234,9 +233,8 @@ end;
 //==================================MAIN==================================
 begin
   StartServer();
-  readln();
-  ActivePlayers[1] := 2;
-  ActivePlayers[2] := 3;
+  ActivePlayers[1] := 1;
+  ActivePlayers[2] := 2;
   for var game := 1 to GameCount do
   begin
     InitGame();
@@ -252,8 +250,7 @@ begin
     else if winner = 0 then
       Draws += 1;
   end;
-  SendState(1, 'tournament_over');
-  SendState(2, 'tournament_over');
+  for var i := 1 to BotCount do SendState(i, 'tournament_over');
   Writeln('Счёт| ', Wins1, ' : ', Wins2);
   Writeln('Ничьих| ', Draws);
 end.
