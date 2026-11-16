@@ -3,7 +3,7 @@
 uses System, System.IO, System.Net, System.Net.Sockets, System.Diagnostics;
 //==================================CONSTS================================
 const
-  GameCount = 3;
+  GameCount = 4;
   VPort = 5001; // НЕДОДЕЛАНО, порт зрителя
   TurnTimeoutMs = 2000;
 //==================================TYPES=================================
@@ -238,22 +238,16 @@ begin
   for var i := 1 to BotCount - 1 do
     for var j := i + 1 to BotCount do
     begin
-      ActivePlayers[1] := i;
-      ActivePlayers[2] := j;
-  
-      Writeln('Матч: ', Players[i].name, ' vs ', Players[j].name);
-      InitGame();
-  
-      if game mod 2 = 0 then
-        FigTurn := 2;
-    
-      var winner := GameLoop();
-      if winner = 1 then
-        Wins1 += 1
-      else if winner = 2 then
-        Wins2 += 1
-      else if winner = 0 then
-        Draws += 1;        
+      for var game := 1 to GameCount do
+      begin
+        InitGame();
+        if game mod 2 = 0 then FigTurn := 2;
+        var winner := GameLoop();
+        if winner = 1 then Wins1 += 1
+        else if winner = 2 then Wins2 += 1
+        else if winner = 0 then Draws += 1;  
+      end;
+      
     end;
   for var i := 1 to BotCount do SendState(i, 'tournament_over');
   Writeln('Счёт| ', Wins1, ' : ', Wins2);
