@@ -13,6 +13,7 @@ type
     Reader: StreamReader;
     Writer: StreamWriter;
     Name: string;
+    Wins,Draws,Looses,Points: integer;
   end;
 //==================================VARS==================================
 var
@@ -233,23 +234,67 @@ end;
 //==================================MAIN==================================
 begin
   StartServer();
-  ActivePlayers[1] := 1;
-  ActivePlayers[2] := 2;
   for var i := 1 to BotCount - 1 do
     for var j := i + 1 to BotCount do
     begin
+      ActivePlayers[1] := i;
+      ActivePlayers[2] := j;
+      Wins1 := 0;
+      Wins2 := 0;
+      Draws := 0;
       for var game := 1 to GameCount do
       begin
         InitGame();
         if game mod 2 = 0 then FigTurn := 2;
         var winner := GameLoop();
-        if winner = 1 then Wins1 += 1
-        else if winner = 2 then Wins2 += 1
-        else if winner = 0 then Draws += 1;  
+        // Победа - 3, Поражение - 0, Нчиья - 1
+        if winner = -1 then
+        begin
+          Writeln('Ошибка. Завершение работы...');
+          Exit;
+        end;
+        if winner = 0 then
+        begin
+          Players[i].Draws += 1;
+          Players[j].Draws += 1;
+          Players[i].Points += 1;
+          Players[j].Points += 1;
+          Draws += 1;
+        end
+        else
+        begin
+          var winnerId := ActivePlayers[winner];
+          var loserId := ActivePlayers[3 - winner];
+          Players[winnerId].Wins += 1;
+          Players[winnerId].Points += 3;
+          Players[loserId].Looses += 1;
+          if winner = 1 then
+            Wins1 += 1
+          else
+            Wins2 += 1;
+        end;
+        Writeln(Players[i].Name, ' vs ', Players[j].Name);
+        Writeln('Победы: ', Wins1, ' : ', Wins2);
+        Writeln('Ничьих: ', Draws);
       end;
       
     end;
+    //===============================================
+  var order := Range(1, BotCount) //возвращает последовательность с 1 по botcount вклбчительно все
+  .OrderByDescending(i -> Players[i].Points) // сортирует по убыванию (в скобках указывается лямбда-выражение(->), это скоращенная функция, то есть она по сути говорит что сравнивай по points
+  .ThenByDescending(i -> Players[i].Wins).ToArray; //если одинаково по первой сортировке, то сорттируем по wins  и toarray делает из последовательности массивчик
+  for var i := 0 to order.Length-1 do
+  begin
+    var p := Players[order[i]];
+    Writeln(i+1, ' место: ', p.name);
+    Writeln('Очки: ', p.Points);
+    Writeln('Победы: ', p.Wins);
+    Writeln('Ничьи: ', p.Draws);
+    Writeln('Поражения: ', p.Looses);
+    Writeln();
+  end;
+  //==================================
   for var i := 1 to BotCount do SendState(i, 'tournament_over');
-  Writeln('Счёт| ', Wins1, ' : ', Wins2);
-  Writeln('Ничьих| ', Draws);
+
+  Writeln();
 end.
