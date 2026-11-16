@@ -1,7 +1,5 @@
 ﻿uses client;
 
-var fig := myfig;
-var fig1 := 3 - myfig;
 
 function CountLine(r, c, dr, dc, fig: integer): integer; //подсчет фигур в ряд начиная с клетки r c  сторону заданную dr dc 
 begin
@@ -25,6 +23,9 @@ begin
 end;
 procedure ChooseMove(var row, col: integer);
 begin
+  var fig := myfig;
+  var fig1 := 3 - myfig;
+
   var board1 := board;
   var bestR := -1; //лучший ход
   var bestC := -1;
