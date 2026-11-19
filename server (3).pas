@@ -1,11 +1,16 @@
 ﻿// BotWar v2 - сервер
 //==================================USES==================================
-uses System, System.IO, System.Net, System.Net.Sockets, System.Diagnostics;
+uses System, System.IO, System.Net, System.Net.Sockets, System.Diagnostics, GraphWPF;
 //==================================CONSTS================================
 const
   GameCount = 4;
-  VPort = 5001; // НЕДОДЕЛАНО, порт зрителя
   TurnTimeoutMs = 2000;
+  col1w = 0.1;
+  col2w = 0.6;
+  col3w = 0.7;
+  col4w = 0.8;
+  col5w = 0.9;
+  col6w = 1;
 //==================================TYPES=================================
 type
   Tplayer = class
@@ -26,25 +31,63 @@ var
   Wins1, Wins2, Draws: integer;
   TournamentStarted: boolean;
   ActivePlayers: array[1..2] of integer;
+  order : sequence of integer;
 //===============================FUNCTIONS================================
+procedure DrawGrid();
+begin
+  pen.Width:=3;
+  line(0,window.Height * 0.1,window.Width,window.Height * 0.1);
+  line(0,window.Height * 0.15,window.Width,window.Height * 0.15);
+  for var i := 1 to BotCount-1 do
+    line(0,window.Height * (0.15+(0.45 / BotCount)*i),window.Width,window.Height * (0.15+0.45 / BotCount*i));
+  line(0,window.Height * 0.6,window.Width,window.Height * 0.6);
+  
+  line(window.Width*col1w,window.Height*0.1,window.Width*col1w,window.Height*0.6);
+  line(window.Width*col2w,window.Height*0.1,window.Width*col2w,window.Height*0.6);
+  line(window.Width*col3w,window.Height*0.1,window.Width*col3w,window.Height*0.6);
+  line(window.Width*col4w,window.Height*0.1,window.Width*col4w,window.Height*0.6);
+  line(window.Width*col5w,window.Height*0.1,window.Width*col5w,window.Height*0.6);
+end;
+procedure DrawStats();
+begin
+  font.Size := 80;
+  font.Color:= color.FromRgb(16,44,56);
+  Drawtext(0,0,window.Width,window.Height*0.1,'BOTWAR');
+  font.Size:=20;
+  font.color:=colors.Black;
+  Drawtext(0,window.Height * 0.1,window.Width*col1w,window.Height * 0.05,'Номер');
+  Drawtext(window.Width*col1w,window.Height * 0.1,window.Width*(col2w-col1w),window.Height * 0.05,'Название');
+  Drawtext(window.Width*col2w,window.Height * 0.1,window.Width*(col3w-col2w),window.Height * 0.05,'Победы');
+  Drawtext(window.Width*col3w,window.Height * 0.1,window.Width*(col4w-col3w),window.Height * 0.05,'Поражения');
+  Drawtext(window.Width*col4w,window.Height * 0.1,window.Width*(col5w-col4w),window.Height * 0.05,'Ничьи');
+  Drawtext(window.Width*col5w,window.Height * 0.1,window.Width*(col6w-col5w),window.Height * 0.05,'Очки');
+  for var i := 1 to BotCount do
+  begin
+    DrawText(0, Window.Height*(0.15+0.45*(i-1)/BotCount), Window.Width*col1w, Window.Height*0.45/BotCount, i.ToString);
+    DrawText(Window.Width*col1w, Window.Height*(0.15+0.45*(i-1)/BotCount), Window.Width*(col2w-col1w), Window.Height*0.45/BotCount, Players[order[i]].Name);
+    DrawText(Window.Width*col2w, Window.Height*(0.15+0.45*(i-1)/BotCount), Window.Width*(col3w-col2w), Window.Height*0.45/BotCount, Players[order[i]].Wins.ToString);
+    DrawText(Window.Width*col3w, Window.Height*(0.15+0.45*(i-1)/BotCount), Window.Width*(col4w-col3w), Window.Height*0.45/BotCount, Players[order[i]].Looses.ToString);
+    DrawText(Window.Width*col4w, Window.Height*(0.15+0.45*(i-1)/BotCount), Window.Width*(col5w-col4w), Window.Height*0.45/BotCount, Players[order[i]].Draws.ToString);
+    DrawText(Window.Width*col5w, Window.Height*(0.15+0.45*(i-1)/BotCount), Window.Width*(col6w-col5w), Window.Height*0.45/BotCount, Players[order[i]].Points.ToString);
+  end;
+    
+end;
 procedure StartServer();
 begin
   listener := new TcpListener(IPAddress.Loopback, 6767);
-  listener.Start;
+  listener.Start();
   Writeln('ждем игркоов...');
   while not tournamentStarted do
   begin
-    if listener.Pending() then
+    if listener.Pending() then 
     begin
       BotCount+=1;
       SetLength(Players, BotCount+1);
       players[BotCount] := new Tplayer;
       players[BotCount].client := listener.AcceptTcpClient();
-      
       var net := players[BotCount].Client.GetStream;
       players[BotCount].reader := new streamreader(net);
       players[BotCount].writer := new streamwriter(net);
-      
       Players[BotCount].name := Players[BotCount].reader.ReadLine();
       Writeln(Players[BotCount].name, ' подключён!');
     end;
@@ -58,6 +101,7 @@ begin
     sleep(50);
   end;
 end;
+
 procedure SendState(id: integer;curtype: string);
 begin
   var writer := players[id].Writer;
@@ -74,6 +118,7 @@ begin
       writer.writeline(board[i,j]);
   writer.Flush;
 end;
+
 function CheckDraw(): boolean;
 begin
   Result := true;
@@ -177,6 +222,7 @@ procedure InitGame();
 begin
   FigTurn := 1;
   board := new integer[N,N];
+  Window.Maximize();
 end;
 
 procedure DrawField();
@@ -280,21 +326,11 @@ begin
       
     end;
     //===============================================
-  var order := Range(1, BotCount) //возвращает последовательность с 1 по botcount вклбчительно все
+  order := Range(1, BotCount) //возвращает последовательность с 1 по botcount вклбчительно все
   .OrderByDescending(i -> Players[i].Points) // сортирует по убыванию (в скобках указывается лямбда-выражение(->), это скоращенная функция, то есть она по сути говорит что сравнивай по points
   .ThenByDescending(i -> Players[i].Wins).ToArray; //если одинаково по первой сортировке, то сорттируем по wins  и toarray делает из последовательности массивчик
-  for var i := 0 to order.Length-1 do
-  begin
-    var p := Players[order[i]];
-    Writeln(i+1, ' место: ', p.name);
-    Writeln('Очки: ', p.Points);
-    Writeln('Победы: ', p.Wins);
-    Writeln('Ничьи: ', p.Draws);
-    Writeln('Поражения: ', p.Looses);
-    Writeln();
-  end;
+  drawGrid();
+  drawStats();
   //==================================
   for var i := 1 to BotCount do SendState(i, 'tournament_over');
-
-  Writeln();
 end.
