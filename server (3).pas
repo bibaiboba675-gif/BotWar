@@ -31,7 +31,7 @@ var
   Wins1, Wins2, Draws: integer;
   TournamentStarted: boolean;
   ActivePlayers: array[1..2] of integer;
-  order : sequence of integer;
+  order : array of integer;
 //===============================FUNCTIONS================================
 procedure DrawGrid();
 begin
@@ -64,11 +64,11 @@ begin
   for var i := 1 to BotCount do
   begin
     DrawText(0, Window.Height*(0.15+0.45*(i-1)/BotCount), Window.Width*col1w, Window.Height*0.45/BotCount, i.ToString);
-    DrawText(Window.Width*col1w, Window.Height*(0.15+0.45*(i-1)/BotCount), Window.Width*(col2w-col1w), Window.Height*0.45/BotCount, Players[order[i]].Name);
-    DrawText(Window.Width*col2w, Window.Height*(0.15+0.45*(i-1)/BotCount), Window.Width*(col3w-col2w), Window.Height*0.45/BotCount, Players[order[i]].Wins.ToString);
-    DrawText(Window.Width*col3w, Window.Height*(0.15+0.45*(i-1)/BotCount), Window.Width*(col4w-col3w), Window.Height*0.45/BotCount, Players[order[i]].Looses.ToString);
-    DrawText(Window.Width*col4w, Window.Height*(0.15+0.45*(i-1)/BotCount), Window.Width*(col5w-col4w), Window.Height*0.45/BotCount, Players[order[i]].Draws.ToString);
-    DrawText(Window.Width*col5w, Window.Height*(0.15+0.45*(i-1)/BotCount), Window.Width*(col6w-col5w), Window.Height*0.45/BotCount, Players[order[i]].Points.ToString);
+    DrawText(Window.Width*col1w, Window.Height*(0.15+0.45*(i-1)/BotCount), Window.Width*(col2w-col1w), Window.Height*0.45/BotCount, Players[order[i-1]].Name);
+    DrawText(Window.Width*col2w, Window.Height*(0.15+0.45*(i-1)/BotCount), Window.Width*(col3w-col2w), Window.Height*0.45/BotCount, Players[order[i-1]].Wins.ToString);
+    DrawText(Window.Width*col3w, Window.Height*(0.15+0.45*(i-1)/BotCount), Window.Width*(col4w-col3w), Window.Height*0.45/BotCount, Players[order[i-1]].Looses.ToString);
+    DrawText(Window.Width*col4w, Window.Height*(0.15+0.45*(i-1)/BotCount), Window.Width*(col5w-col4w), Window.Height*0.45/BotCount, Players[order[i-1]].Draws.ToString);
+    DrawText(Window.Width*col5w, Window.Height*(0.15+0.45*(i-1)/BotCount), Window.Width*(col6w-col5w), Window.Height*0.45/BotCount, Players[order[i-1]].Points.ToString);
   end;
     
 end;
@@ -76,6 +76,9 @@ procedure StartServer();
 begin
   listener := new TcpListener(IPAddress.Loopback, 6767);
   listener.Start();
+  //System.IO.File.AppendAllText('debug.txt', 'Перед выводом' + #13#10);
+  //Console.WriteLine('...');
+  //System.IO.File.AppendAllText('debug.txt', 'После вывода' + #13#10);
   Writeln('ждем игркоов...');
   while not tournamentStarted do
   begin
