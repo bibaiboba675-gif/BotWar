@@ -76,13 +76,65 @@ procedure DrawStatus(text:string);
 begin
   
 end;
+
+procedure DrawField();
+begin
+  var fieldX := Window.Width * 0.03;
+  var fieldY := Window.Height * 0.63;
+  var fieldSize := Min(Window.Width * 0.4, Window.Height * 0.34);
+  var cellSize := fieldSize / N;
+  for var i := 0 to N do
+  begin
+    Line(fieldX+i*cellSize, fieldY, fieldX+i*cellSize, fieldY+fieldSize);
+    Line(fieldX, fieldY+i*cellSize, fieldX+fieldSize, fieldY+i*cellSize);
+  end;
+  Pen.Width := 2;
+  for var i := 0 to N-1 do
+    for var j := 0 to N-1 do
+    begin
+      var x := fieldX + (j+0.5)*cellSize;
+      var y := fieldY + (i+0.5)*cellSize;
+      var r := cellSize*0.3;
+  
+      if board[i,j] = 1 then
+      begin
+        pen.Color := colors.Red;
+        Line(x-r, y-r, x+r, y+r);
+        Line(x-r, y+r, x+r, y-r);
+        pen.Color := colors.Black;
+      end
+      else if board[i,j] = 2 then
+      begin
+        pen.Color := colors.Blue;
+        DrawCircle(x,y,r);
+        pen.Color := colors.Black;
+      end;
+
+    end;
+  Pen.Width := 1;
+end;
+
+procedure DrawAll();
+begin
+  Window.Maximize();
+  Window.Clear();
+  order := Range(1, BotCount) //возвращает последовательность с 1 по botcount вклбчительно все
+  .OrderByDescending(i -> Players[i].Points) // сортирует по убыванию (в скобках указывается лямбда-выражение(->), это скоращенная функция, то есть она по сути говорит что сравнивай по points
+  .ThenByDescending(i -> Players[i].Wins).ToArray; //если одинаково по первой сортировке, то сорттируем по wins  и toarray делает из последовательности массивчик
+  drawGrid();
+  drawStats();
+end;
+
+procedure KeyDown(k : key);
+begin
+  if (k = key.Enter) and (BotCount >= 2) then
+    TournamentStarted:=true;
+  print('dddd');
+end;
 procedure StartServer();
 begin
-  listener := new TcpListener(IPAddress.Loopback, 6767);
+  listener := new TcpListener(IPAddress.Any, 6767);
   listener.Start();
-  //System.IO.File.AppendAllText('debug.txt', 'Перед выводом' + #13#10);
-  //Console.WriteLine('...');
-  //System.IO.File.AppendAllText('debug.txt', 'После вывода' + #13#10);
   Writeln('ждем игркоов...');
   while not tournamentStarted do
   begin
@@ -97,13 +149,7 @@ begin
       players[BotCount].writer := new streamwriter(net);
       Players[BotCount].name := Players[BotCount].reader.ReadLine();
       Writeln(Players[BotCount].name, ' подключён!');
-    end;
-    if Console.KeyAvailable then // обработчик ошибок по сути
-    begin
-      var key := Console.ReadKey(true); //читаем клавишу в консоли, при том true- обозначает что клавишу не надо отображать
-
-      if (key.Key = ConsoleKey.Enter) and (BotCount >= 2) then
-        TournamentStarted := true;
+      drawall();
     end;
     sleep(50);
   end;
@@ -229,21 +275,8 @@ procedure InitGame();
 begin
   FigTurn := 1;
   board := new integer[N,N];
-  Window.Maximize();
+
 end;
-
-procedure DrawField();
-begin
-  Writeln();
-  for var i := 0 to N - 1 do
-  begin
-    for var j := 0 to N - 1 do
-      Write(board[i, j], ' ');
-    Writeln();
-  end;
-end;
-
-
 
 function GameLoop(): integer;
 begin
@@ -281,11 +314,12 @@ begin
       exit;
     end;
 
-    SwitchTurn(); 
+    SwitchTurn();
   end;
 end;
 //==================================MAIN==================================
 begin
+  OnKeyDown := KeyDown;
   StartServer();
   for var i := 1 to BotCount - 1 do
     for var j := i + 1 to BotCount do
@@ -332,12 +366,10 @@ begin
       end;
       
     end;
-    //===============================================
-  order := Range(1, BotCount) //возвращает последовательность с 1 по botcount вклбчительно все
-  .OrderByDescending(i -> Players[i].Points) // сортирует по убыванию (в скобках указывается лямбда-выражение(->), это скоращенная функция, то есть она по сути говорит что сравнивай по points
-  .ThenByDescending(i -> Players[i].Wins).ToArray; //если одинаково по первой сортировке, то сорттируем по wins  и toarray делает из последовательности массивчик
-  drawGrid();
-  drawStats();
-  //==================================
+  //===============================================
+  DrawAll();
+  DrawField();
   for var i := 1 to BotCount do SendState(i, 'tournament_over');
+  //===============================================
+
 end.
