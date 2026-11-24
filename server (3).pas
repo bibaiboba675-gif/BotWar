@@ -32,6 +32,10 @@ var
   TournamentStarted: boolean;
   ActivePlayers: array[1..2] of integer;
   order : array of integer;
+  LastWinner, LastGame: integer;
+  LastGameTime: string;
+  LastGameDuration: real;
+  LastWinFig: string;
 //===============================FUNCTIONS================================
 procedure DrawGrid();
 begin
@@ -113,7 +117,31 @@ begin
     end;
   Pen.Width := 1;
 end;
+procedure DrawGameInfo();
+begin
+  var winnerName: string;
+  if LastWinner = 0 then
+    winnerName := 'Ничья'
+  else if LastWinner = -1 then
+    winnerName := 'Ошибка'
+  else
+  begin
+    winnerName := Players[ActivePlayers[LastWinner]].Name;
+    if LastWinner = 1 then lastwinfig := 'X'
+    else lastwinfig := 'O';
+  end;
 
+
+  Font.Size := 24;
+  DrawText(Window.Width*0.45, Window.Height*0.6, Window.Width*0.55, Window.Height*0.06, 'Последняя игра');
+
+  Font.Size := 18;
+  DrawText(window.Width*0.45, Window.Height*0.66, Window.Width*0.55, Window.Height*0.05, Players[ActivePlayers[1]].Name + ' VS ' + Players[ActivePlayers[2]].Name);
+  DrawText(Window.Width*0.45, Window.Height*0.71, Window.Width*0.55, Window.Height*0.05, 'Победитель: ' + winnerName + '(' + lastWinFig + ')');
+  DrawText(Window.Width*0.45, Window.Height*0.76, Window.Width*0.55, Window.Height*0.05, 'Партия: ' + LastGame.ToString + '/' + GameCount.ToString);
+  DrawText(Window.Width*0.45, Window.Height*0.81, Window.Width*0.55, Window.Height*0.05, 'Время: ' + LastGameTime);
+  DrawText(Window.Width*0.45, Window.Height*0.86, Window.Width*0.55, Window.Height*0.05, 'Длительность вычислений: ' + round(lastgameDuration).Tostring + 'мс');
+end;
 procedure DrawAll();
 begin
   Window.Maximize();
@@ -333,7 +361,13 @@ begin
       begin
         InitGame();
         if game mod 2 = 0 then FigTurn := 2;
+        var timer := Stopwatch.StartNew();
         var winner := GameLoop();
+        timer.Stop();
+        LastGameDuration := timer.Elapsed.TotalMilliseconds;
+        LastGameTime := DateTime.Now.ToString('HH:mm:ss');
+        LastWinner := winner;
+        LastGame := game;
         // Победа - 3, Поражение - 0, Нчиья - 1
         if winner = -1 then
         begin
@@ -369,6 +403,7 @@ begin
   //===============================================
   DrawAll();
   DrawField();
+  DrawGameInfo();
   for var i := 1 to BotCount do SendState(i, 'tournament_over');
   //===============================================
 
