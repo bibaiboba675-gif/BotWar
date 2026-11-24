@@ -79,21 +79,21 @@ begin
         break;
       if curtype = 'game_over' then
         begin
-          if yourturn then writeln('я победил')
-          else writeln('я проиграл');
+          //if yourturn then writeln('я победил')
+          //else writeln('я проиграл');
           continue;
         end
         else if curtype = 'draw' then
         begin
-          writeln('ничья');
-          writeln(board);
+          //writeln('ничья');
+          //writeln(board);
           continue;
         end
         else if curtype = 'error' then
         begin
-          if yourturn then writeln('я ошибся, прости')
-          else writeln('он ошибся, ахахахаха');
-          writeln(board);
+          //if yourturn then writeln('я ошибся, прости')
+          //else writeln('он ошибся, ахахахаха');
+          //writeln(board);
           exit;
         end;
       if yourturn then

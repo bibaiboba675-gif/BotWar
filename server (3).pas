@@ -72,6 +72,10 @@ begin
   end;
     
 end;
+procedure DrawStatus(text:string);
+begin
+  
+end;
 procedure StartServer();
 begin
   listener := new TcpListener(IPAddress.Loopback, 6767);
